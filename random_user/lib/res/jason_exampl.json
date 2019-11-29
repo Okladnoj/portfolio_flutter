@@ -1,0 +1,66 @@
+{
+    "results": [
+        {
+            "gender": "female",
+            "name": {
+                "title": "Miss",
+                "first": "Celina",
+                "last": "Shaw"
+            },
+            "location": {
+                "street": {
+                    "number": 2415,
+                    "name": "Cherry St"
+                },
+                "city": "Mackay",
+                "state": "Western Australia",
+                "country": "Australia",
+                "postcode": 7081,
+                "coordinates": {
+                    "latitude": "-83.9840",
+                    "longitude": "78.1241"
+                },
+                "timezone": {
+                    "offset": "+3:30",
+                    "description": "Tehran"
+                }
+            },
+            "email": "celina.shaw@example.com",
+            "login": {
+                "uuid": "2d49318f-4591-41c2-98b0-d3a75341685a",
+                "username": "angryswan300",
+                "password": "qwerty1",
+                "salt": "vJggWkwF",
+                "md5": "1b72f335afdb2cf07c4c743a93371cc6",
+                "sha1": "c355e216c2dab026fc96d8ea16bd13a434c5cdf6",
+                "sha256": "bcffdf4d4b9476ea876dd01fa687dd95239c872e3ca4fb23d140a74df4b1ef78"
+            },
+            "dob": {
+                "date": "1980-06-16T05:33:28.421Z",
+                "age": 39
+            },
+            "registered": {
+                "date": "2010-04-01T19:34:48.901Z",
+                "age": 9
+            },
+            "phone": "02-3145-3610",
+            "cell": "0463-408-223",
+            "id": {
+                "name": "TFN",
+                "value": "883531790"
+            },
+            "picture": {
+                "large": "https://randomuser.me/api/portraits/women/36.jpg",
+                "medium": "https://randomuser.me/api/portraits/med/women/36.jpg",
+                "thumbnail": "https://randomuser.me/api/portraits/thumb/women/36.jpg"
+            },
+            "nat": "AU"
+        }
+    ],
+    "info": {
+        "seed": "4aa50eb2ff9accdd",
+        "results": 1,
+        "page": 1,
+        "version": "1.3"
+    }
+}
