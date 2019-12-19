@@ -6,7 +6,7 @@ import '../main.dart';
 class MapPageState extends State<MapPage> {
   GoogleMapController mapController;
 
-  final LatLng _centr = const LatLng(45.00, -130.00);
+  final LatLng _centr = const LatLng(45.00, 39.00);
   void _onMapCreated(GoogleMapController controller) {
     mapController = controller;
   }
