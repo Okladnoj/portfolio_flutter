@@ -20,9 +20,10 @@ class MapPageState extends State<MapPage> {
         ),
       ),
       body: Center(
-        child: Row(
+        child: Column(
           children: <Widget>[
             Container(
+              height: 400,
               child: GoogleMap(
                 onMapCreated: _onMapCreated,
                 initialCameraPosition: CameraPosition(
