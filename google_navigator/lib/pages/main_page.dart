@@ -14,6 +14,7 @@ class MyApp extends StatefulWidget {
 }
 
 class _MyAppState extends State<MyApp> {
+  String _stringDistanseFoPlase = '';
   Set<Polyline> _polilines = {};
   Marker _markerChooseLocation = Marker(
     position: LatLng(0.0, 0.0),
@@ -178,6 +179,7 @@ class _MyAppState extends State<MyApp> {
           ]).distance.toInt();
         }
       });
+      _stringDistance();
     }
 
     Widget _widget() {
@@ -262,7 +264,7 @@ class _MyAppState extends State<MyApp> {
             onPressed: () {
               polilinesShow();
             },
-            label: Text(_stringDistance()),
+            label: Text(_stringDistanseFoPlase),
             icon: Icon(Icons.linear_scale),
             backgroundColor: Colors.pink[900].withAlpha(150),
           ),
@@ -292,16 +294,17 @@ class _MyAppState extends State<MyApp> {
     );
   }
 
-  String _stringDistance() {
+  _stringDistance() {
     if (_distanceToLocation > 0) {
       if (_distanceToLocation > 1000) {
         double _d = _distanceToLocation / 1000;
-        return 'To this place ${_d.toStringAsFixed(2)} kilometers';
+        _stringDistanseFoPlase =
+            'To this place ${_d.toStringAsFixed(2)} kilometers';
       } else {
-        return 'To this place $_distanceToLocation meters';
+        _stringDistanseFoPlase = 'To this place $_distanceToLocation meters';
       }
     } else {
-      return 'Show distance on TAP';
+      _stringDistanseFoPlase = 'Show distance on TAP';
     }
   }
 
@@ -314,7 +317,7 @@ class _MyAppState extends State<MyApp> {
   // Platform messages are asynchronous, so we initialize in an async method.
   initPlatformState() async {
     await _locationService.changeSettings(
-        accuracy: LocationAccuracy.HIGH, interval: 50000);
+        accuracy: LocationAccuracy.HIGH, interval: 1000);
 
     LocationData location;
     // Platform messages may fail, so we use a try/catch PlatformException.
@@ -335,6 +338,7 @@ class _MyAppState extends State<MyApp> {
 
             if (mounted) {
               setState(() {
+                _stringDistance();
                 _currentLocation = result;
               });
             }
