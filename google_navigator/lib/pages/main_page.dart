@@ -106,7 +106,7 @@ class _MyAppState extends State<MyApp> {
       markers: _locMark(),
       onCameraMove: _onCameraMove,
       compassEnabled: true,
-      rotateGesturesEnabled: true,
+      rotateGesturesEnabled: false,
       polylines: _polilines,
     );
 
