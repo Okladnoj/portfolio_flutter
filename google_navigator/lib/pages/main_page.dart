@@ -374,7 +374,6 @@ class _MyAppState extends State<MyApp> {
     }
 
     setState(() {
-      _fundistanceToLocation();
       _startLocation = location;
     });
   }
