@@ -79,8 +79,8 @@ class _MyAppState extends State<MyApp> {
   Set<Marker> _locMark() {
     _markerMyLocation = Marker(
       position: LatLng(
-        _startLocation.latitude ?? 0.0,
-        _startLocation.longitude ?? 0.0,
+        _currentLocation.latitude ?? 0.0,
+        _currentLocation.longitude ?? 0.0,
       ),
       icon: navigatorIcon == null
           ? BitmapDescriptor.defaultMarker
@@ -103,7 +103,7 @@ class _MyAppState extends State<MyApp> {
       },
       initialCameraPosition: _initialCamera ?? true,
       mapType: _currentMapType,
-      markers: _locMark(),
+      markers: _locMark().isEmpty ? null : _markers,
       onCameraMove: _onCameraMove,
       compassEnabled: true,
       rotateGesturesEnabled: false,
@@ -173,8 +173,8 @@ class _MyAppState extends State<MyApp> {
             _markerChooseLocation.position.latitude ?? 0,
             _markerChooseLocation.position.longitude ?? 0
           ], locSecond: [
-            _startLocation.latitude ?? 0,
-            _startLocation.longitude ?? 0
+            _currentLocation.latitude ?? 0,
+            _currentLocation.longitude ?? 0
           ]).distance.toInt();
         }
       });
@@ -333,15 +333,14 @@ class _MyAppState extends State<MyApp> {
             _currentCameraPosition = CameraPosition(
                 target: LatLng(result.latitude, result.longitude), zoom: 18);
 
-            final GoogleMapController controller = await _controller.future;
-            controller.animateCamera(
-                CameraUpdate.newCameraPosition(_currentCameraPosition));
-
             if (mounted) {
               setState(() {
                 _currentLocation = result;
               });
             }
+            final GoogleMapController controller = await _controller.future;
+            controller.animateCamera(
+                CameraUpdate.newCameraPosition(_currentCameraPosition));
           });
         }
       } else {
