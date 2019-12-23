@@ -65,6 +65,20 @@ class _MyAppState extends State<MyApp> {
     });
   }
 
+  void _fundistanceToLocation() {
+    if (_currentLocation != null) {
+      _distanceToLocation = GetDistance.getKm(locFirst: [
+        _markerChooseLocation.position.latitude ?? 0,
+        _markerChooseLocation.position.longitude ?? 0
+      ], locSecond: [
+        _currentLocation.latitude ?? 0,
+        _currentLocation.longitude ?? 0
+      ]).distance.toInt();
+    } else {
+      _distanceToLocation = 0;
+    }
+  }
+
   _setCustomIcon() {
     BitmapDescriptor.fromAssetImage(
             ImageConfiguration(
@@ -170,13 +184,7 @@ class _MyAppState extends State<MyApp> {
           _markers.add(_markerMyLocation);
           _alfaChoothLocation = 200;
           _alfaTarget = 0;
-          _distanceToLocation = GetDistance.getKm(locFirst: [
-            _markerChooseLocation.position.latitude ?? 0,
-            _markerChooseLocation.position.longitude ?? 0
-          ], locSecond: [
-            _currentLocation.latitude ?? 0,
-            _currentLocation.longitude ?? 0
-          ]).distance.toInt();
+          _fundistanceToLocation();
         }
       });
       _stringDistance();
@@ -317,7 +325,7 @@ class _MyAppState extends State<MyApp> {
   // Platform messages are asynchronous, so we initialize in an async method.
   initPlatformState() async {
     await _locationService.changeSettings(
-        accuracy: LocationAccuracy.HIGH, interval: 1000);
+        accuracy: LocationAccuracy.HIGH, interval: 3000);
 
     LocationData location;
     // Platform messages may fail, so we use a try/catch PlatformException.
@@ -338,8 +346,9 @@ class _MyAppState extends State<MyApp> {
 
             if (mounted) {
               setState(() {
-                _stringDistance();
                 _currentLocation = result;
+                _stringDistance();
+                _fundistanceToLocation();
               });
             }
             final GoogleMapController controller = await _controller.future;
@@ -365,6 +374,7 @@ class _MyAppState extends State<MyApp> {
     }
 
     setState(() {
+      _fundistanceToLocation();
       _startLocation = location;
     });
   }
