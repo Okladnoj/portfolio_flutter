@@ -1,7 +1,10 @@
 import 'dart:async';
+import 'dart:math';
 
 import 'package:flutter/material.dart';
+import 'package:flutter_compass/flutter_compass.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
+import 'package:google_navigator/servises/get_distance.dart';
 import 'package:location/location.dart';
 import 'package:flutter/services.dart';
 
@@ -11,9 +14,21 @@ class MyApp extends StatefulWidget {
 }
 
 class _MyAppState extends State<MyApp> {
+  Set<Polyline> _polilines = {};
+  Marker _markerChooseLocation = Marker(
+    position: LatLng(0.0, 0.0),
+    markerId: MarkerId('Choose Locaion'),
+  );
+  Marker _markerMyLocation = Marker(
+    position: LatLng(0.0, 0.0),
+    markerId: MarkerId('My Locaion'),
+  );
+  double _direction;
+  BitmapDescriptor navigatorIcon;
   int _alfaChangeType = 70;
   int _alfaChoothLocation = 70;
   int _alfaTarget = 200;
+  int _distanceToLocation = 0;
   LocationData _startLocation;
   LocationData _currentLocation;
 
@@ -27,7 +42,7 @@ class _MyAppState extends State<MyApp> {
 
   Completer<GoogleMapController> _controller = Completer();
   static final CameraPosition _initialCamera = CameraPosition(
-    target: LatLng(0, 0),
+    target: LatLng(0.0, 0.0),
     zoom: 4,
   );
 
@@ -39,8 +54,45 @@ class _MyAppState extends State<MyApp> {
   @override
   void initState() {
     super.initState();
-
     initPlatformState();
+    _setCustomIcon(); //the app will be destroyed
+
+    FlutterCompass.events.listen((double direction) {
+      setState(() {
+        _direction = direction;
+      });
+    });
+  }
+
+  _setCustomIcon() {
+    BitmapDescriptor.fromAssetImage(
+            ImageConfiguration(
+              devicePixelRatio: 1.0,
+              locale: Locale.fromSubtags(),
+            ),
+            'assets/IconNavigatorM.png')
+        .then((onValue) {
+      navigatorIcon = onValue;
+    });
+  }
+
+  Set<Marker> _locMark() {
+    _markerMyLocation = Marker(
+      position: LatLng(
+        _startLocation.latitude ?? 0.0,
+        _startLocation.longitude ?? 0.0,
+      ),
+      icon: navigatorIcon == null
+          ? BitmapDescriptor.defaultMarker
+          : navigatorIcon,
+      markerId: MarkerId('My Locaion'),
+      anchor: Offset(0.5, 0.65),
+      rotation: _direction - 0 ?? 0,
+    );
+    _markers.clear();
+    _markers.add(_markerMyLocation);
+    if (_alfaChoothLocation > 70) _markers.add(_markerChooseLocation);
+    return _markers;
   }
 
   @override
@@ -49,12 +101,40 @@ class _MyAppState extends State<MyApp> {
       onMapCreated: (GoogleMapController controller) {
         _controller.complete(controller);
       },
-      initialCameraPosition: _initialCamera,
+      initialCameraPosition: _initialCamera ?? true,
       mapType: _currentMapType,
-      myLocationEnabled: true,
-      markers: _markers,
+      markers: _locMark(),
       onCameraMove: _onCameraMove,
+      compassEnabled: true,
+      rotateGesturesEnabled: true,
+      polylines: _polilines,
     );
+
+    void polilinesShow() {
+      Polyline _lineToPlace;
+      if ((_alfaChoothLocation == 200) & (_polilines.isEmpty)) {
+        _lineToPlace = Polyline(
+          polylineId: PolylineId('11111'),
+          points: [
+            LatLng(_markerMyLocation.position.latitude,
+                _markerMyLocation.position.longitude),
+            LatLng(_markerChooseLocation.position.latitude,
+                _markerChooseLocation.position.longitude)
+          ],
+          color: Colors.red.withAlpha(160),
+          visible: true,
+          width: 3,
+        );
+        setState(() {
+          _polilines.add(_lineToPlace);
+        });
+      } else {
+        setState(() {
+          _polilines.clear();
+        });
+      }
+    }
+
     void _onMapTypeButtonPressed() {
       setState(() {
         _currentMapType = _currentMapType == MapType.normal
@@ -66,23 +146,36 @@ class _MyAppState extends State<MyApp> {
 
     void _onAddMarkerButtonPressed() {
       setState(() {
-        var _itemLoc = Marker(
-          markerId: MarkerId(_lastMapPosition.toString()),
+        _markerChooseLocation = Marker(
+          markerId: MarkerId("New Location"),
           position: _lastMapPosition,
           infoWindow: InfoWindow(
-            title: 'Destination',
-            snippet: 'count the distance to this',
+            title: 'Current Plase',
+            snippet: 'Count the distance to this',
           ),
           icon: BitmapDescriptor.defaultMarker,
         );
-        if (_markers.length != 0) {
+
+        if (_alfaChoothLocation > 70) {
           _markers.clear();
+          _polilines.clear();
+          _markers.add(_markerMyLocation);
           _alfaChoothLocation = 70;
           _alfaTarget = 200;
+          _distanceToLocation = 0;
         } else {
-          _markers.add(_itemLoc);
+          _markers.clear();
+          _markers.add(_markerChooseLocation);
+          _markers.add(_markerMyLocation);
           _alfaChoothLocation = 200;
           _alfaTarget = 0;
+          _distanceToLocation = GetDistance.getKm(locFirst: [
+            _markerChooseLocation.position.latitude ?? 0,
+            _markerChooseLocation.position.longitude ?? 0
+          ], locSecond: [
+            _startLocation.latitude ?? 0,
+            _startLocation.longitude ?? 0
+          ]).distance.toInt();
         }
       });
     }
@@ -96,7 +189,11 @@ class _MyAppState extends State<MyApp> {
               return SizedBox(
                   height: costraints.constrainHeight(),
                   width: costraints.constrainWidth(),
-                  child: googleMap);
+                  child: googleMap ??
+                      Padding(
+                        padding: const EdgeInsets.all(8.0),
+                        child: CircularProgressIndicator(),
+                      ));
             }),
           ),
           Icon(
@@ -157,18 +254,55 @@ class _MyAppState extends State<MyApp> {
           )),
           body: new Stack(children: <Widget>[
             _widget(),
+            _rotwidget(),
             _buttomWidget(context),
           ]),
           floatingActionButton: FloatingActionButton.extended(
             heroTag: 'calculate',
-            onPressed: () {},
-            label: Text('Calculate'),
+            onPressed: () {
+              polilinesShow();
+            },
+            label: Text(_stringDistance()),
             icon: Icon(Icons.linear_scale),
             backgroundColor: Colors.pink[900].withAlpha(150),
           ),
           floatingActionButtonLocation:
               FloatingActionButtonLocation.centerFloat,
         ));
+  }
+
+  Widget _rotwidget() {
+    return Padding(
+      padding: const EdgeInsets.all(10.0),
+      child: new Container(
+        height: 100,
+        width: 100,
+        alignment: Alignment.bottomLeft,
+        color: Colors.white.withAlpha(0),
+        child: new Transform.rotate(
+          angle: ((_direction ?? 0) * (pi / 180) * -1),
+          child: Center(
+            child: Image.asset(
+              'assets/IconCompas.png',
+              scale: 0.2,
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
+  String _stringDistance() {
+    if (_distanceToLocation > 0) {
+      if (_distanceToLocation > 1000) {
+        double _d = _distanceToLocation / 1000;
+        return 'To this place ${_d.toStringAsFixed(2)} kilometers';
+      } else {
+        return 'To this place $_distanceToLocation meters';
+      }
+    } else {
+      return 'Show distance on TAP';
+    }
   }
 
   LatLng _lastMapPosition = _initialCamera.target;
@@ -180,7 +314,7 @@ class _MyAppState extends State<MyApp> {
   // Platform messages are asynchronous, so we initialize in an async method.
   initPlatformState() async {
     await _locationService.changeSettings(
-        accuracy: LocationAccuracy.HIGH, interval: 10000);
+        accuracy: LocationAccuracy.HIGH, interval: 50000);
 
     LocationData location;
     // Platform messages may fail, so we use a try/catch PlatformException.
@@ -197,7 +331,7 @@ class _MyAppState extends State<MyApp> {
               .onLocationChanged()
               .listen((LocationData result) async {
             _currentCameraPosition = CameraPosition(
-                target: LatLng(result.latitude, result.longitude), zoom: 16);
+                target: LatLng(result.latitude, result.longitude), zoom: 18);
 
             final GoogleMapController controller = await _controller.future;
             controller.animateCamera(
