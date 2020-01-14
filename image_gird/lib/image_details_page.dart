@@ -3,7 +3,7 @@ import 'package:flutter/material.dart';
 class ImageDetalisPage extends StatelessWidget {
   final String assetPath;
 
-  const ImageDetalisPage({Key key, @required this.assetPath})
+  const ImageDetalisPage({Key key, this.assetPath})
       : assert(assetPath != null),
         super(key: key);
   @override

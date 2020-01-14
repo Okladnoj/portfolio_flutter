@@ -4,7 +4,7 @@ import 'package:nsplash_to_app/models/user_model.dart';
 class ImageDetalisPage extends StatelessWidget {
   final UserModel assetPath;
 
-  const ImageDetalisPage({Key key, @required this.assetPath})
+  const ImageDetalisPage({Key key, this.assetPath})
       : assert(assetPath != null),
         super(key: key);
   @override
